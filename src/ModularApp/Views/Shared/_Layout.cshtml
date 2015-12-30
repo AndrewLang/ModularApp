@@ -34,6 +34,29 @@
                     <li><a asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
                 </ul>
+               
+                @using System.Security.Claims
+
+                @if(User.IsSignedIn())
+                {
+                    <form asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="navbar-right">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                <a asp-controller="Manage" asp-action="Index" title="Manage">Hello @User.GetUserName()!</a>
+                            </li>
+                            <li>
+                                <button type="submit" class="btn btn-link navbar-btn navbar-link">Log off</button>
+                            </li>
+                        </ul>
+                    </form>
+                }
+                else
+                {
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a asp-controller="Account" asp-action="Register">Register</a></li>
+                        <li><a href="/account/account/login">Log in</a></li>
+                    </ul>
+                }
             </div>
         </div>
     </div>

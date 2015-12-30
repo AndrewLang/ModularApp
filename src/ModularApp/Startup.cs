@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Account.Models;
+using Account.Services;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ModularApp.Common;
 
 namespace ModularApp
 {
@@ -28,6 +33,16 @@ namespace ModularApp
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
+            services.AddEntityFramework()
+                .AddSqlServer()
+                .AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+
+            services.AddIdentity<User,IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+
             services.AddMvc()
                    .AddControllersAsServices(new Assembly[] {
                         GetType().GetTypeInfo().Assembly
@@ -39,6 +54,10 @@ namespace ModularApp
                        //var provider = options.FileProvider;
                        //options.ViewLocationExpanders.Add(new ModuleViewLocationExpander(services,Configuration));
                    });
+
+            // Add application services.
+            services.AddTransient<IEmailSender,AuthMessageSender>();
+            services.AddTransient<ISmsSender,AuthMessageSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,12 +76,15 @@ namespace ModularApp
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseIISPlatformHandler();
+            app.UseIISPlatformHandler(options => options.AuthenticationDescriptions.Clear());
 
             app.UseStaticFiles();
 
+            app.UseIdentity();
+
             app.UseMvc(routes =>
             {
+                // Support area
                 routes.MapRoute(name: "areaRoute",
                    template: "{area:exists}/{controller}/{action}",
                    defaults: new { controller = "Admin",action = "Index" });

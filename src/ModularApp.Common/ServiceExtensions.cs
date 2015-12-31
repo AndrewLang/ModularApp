@@ -12,9 +12,10 @@ using Microsoft.AspNet.Routing;
 
 namespace ModularApp.Common
 {
+
     public static class ServiceExtensions
     {
-        public static IServiceCollection ScanExtensions(this IServiceCollection services)
+        public static IExtensionBuilder AddExtensions(this IServiceCollection services)
         {
             var serviceProvider = services.BuildServiceProvider();
             var assemblyProvider = serviceProvider.GetService<IAssemblyProvider>();
@@ -23,33 +24,47 @@ namespace ModularApp.Common
                                         .SelectMany(x => x.GetTypes().Select(t => t.GetTypeInfo()))
                                         .Where(x => typeof(IExtension).GetTypeInfo().IsAssignableFrom(x) && !x.IsAbstract);
 
-            foreach (var type in types)
+            foreach(var type in types)
             {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IExtension), type.AsType()));
+                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IExtension),type.AsType()));
             }
 
-            return services;
+            return new ExtensionBuilder(services);
         }
-        public static IServiceCollection ConfigureExtensions(this IServiceCollection services)
+        public static IExtensionBuilder ConfigureExtensions(this IExtensionBuilder builder)
         {
-            var extensions = services.BuildServiceProvider().GetServices<IExtension>();
+            var extensions = builder.ServiceProvider.GetServices<IExtension>();
 
-            foreach (var item in extensions)
+            foreach(var item in extensions)
             {
-                item.ConfigureServices(services);
+                item.ConfigureServices(builder.Services);
             }
 
-            return services;
+            return builder;
         }
 
-        public static void ConfigureExtensionRoutes( this IApplicationBuilder app, IRouteBuilder routes)
+        public static IApplicationBuilder ConfigureExtensionRoutes(this IApplicationBuilder app,IRouteBuilder routes)
         {
             var extensions = app.ApplicationServices.GetServices<IExtension>();
 
-            foreach (var item in extensions)
+            foreach(var item in extensions)
             {
                 item.ConfigureRoutes(routes);
             }
+
+            return app;
+        }
+
+        public static IApplicationBuilder UseExtensions(this IApplicationBuilder app)
+        {
+            var extensions = app.ApplicationServices.GetServices<IExtension>();
+
+            foreach(var item in extensions)
+            {
+                item.Configure(app);
+            }
+
+            return app;
         }
     }
 }

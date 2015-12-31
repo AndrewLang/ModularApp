@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,10 +11,13 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Routing;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using ModularApp.Common;
 
 namespace ModularApp
@@ -45,20 +49,12 @@ namespace ModularApp
                     .AddDefaultTokenProviders();
 
 
-            services.AddMvc()
-                    .AddControllersAsServices(new Assembly[] {
-                         GetType().GetTypeInfo().Assembly
-                    })
-                    .AddViewOptions(options => {
-                        var count = options.ViewEngines.Count;
-                    })
+            services.AddMvc()                    
                     .AddRazorOptions(options => {
-                        //var provider = options.FileProvider;
-                        //options.ViewLocationExpanders.Add(new ModuleViewLocationExpander(services,Configuration));
+                        options.ViewLocationExpanders.Add(new ModuleViewLocationExpander());
                     });
 
-
-            services.ScanExtensions()
+            services.AddExtensions()
                     .ConfigureExtensions();
         }
 
@@ -84,8 +80,11 @@ namespace ModularApp
 
             app.UseIdentity();
 
+            app.UseExtensions();
+
             app.UseMvc(routes =>
             {
+                // allow extension to configure routes
                 app.ConfigureExtensionRoutes(routes);
 
                 // Support area
@@ -101,5 +100,38 @@ namespace ModularApp
 
         // Entry point for the application.
         public static void Main(string[] args) => WebApplication.Run<Startup>(args);
+    }
+
+    public class ModuleViewLocationExpander:IViewLocationExpander
+    {
+        public ModuleViewLocationExpander()
+        {
+          
+        }
+        public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context,IEnumerable<string> viewLocations)
+        {
+            foreach(var location in viewLocations)
+            {
+                yield return location;
+            }
+
+            if(IsArea(context))
+            {
+                yield return "/Areas/ModularApp.{2}/Views/{1}/{0}.cshtml";
+                yield return "/Areas/ModularApp.{2}/Views/Shared/{0}.cshtml";
+            }
+        }
+
+        public void PopulateValues(ViewLocationExpanderContext context)
+        {
+            var name = context.ViewName;
+        }
+
+        bool IsArea( ViewLocationExpanderContext context)
+        {
+            if(context.ActionContext.ActionDescriptor.RouteConstraints.Any(x => x.RouteKey == "area" && !string.IsNullOrEmpty(x.RouteValue)))
+                return true;
+            return false;
+        }
     }
 }

@@ -2,26 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Account.Services;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using ModularApp.Common;
+using Microsoft.AspNet.Builder;
 
-namespace Account
+namespace ModularApp.BlogEngine
 {
-    public class AccountExtension:IExtension
+    public class BlogEngineExtension:IExtension
     {
         public void ConfigureRoutes(IRouteBuilder routes)
         {
-            
+            routes.MapRoute(
+                name: "ModularApp.BlogEngine",
+                template: "{area}/test/{controller}/{action}",
+                defaults: new { controller="Post", action= "Index"});
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add application services.
-            services.AddTransient<IEmailSender,AuthMessageSender>();
-            services.AddTransient<ISmsSender,AuthMessageSender>();
 
         }
 

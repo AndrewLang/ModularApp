@@ -9,9 +9,9 @@ using Microsoft.AspNet.Builder;
 
 namespace ModularApp.BlogEngine
 {
-    public class BlogEngineExtension:IExtension
+    public class BlogEngineExtension:Extension
     {
-        public void ConfigureRoutes(IRouteBuilder routes)
+        public virtual void ConfigureRoutes(IRouteBuilder routes)
         {
             routes.MapRoute(
                 name: "ModularApp.BlogEngine",
@@ -19,14 +19,5 @@ namespace ModularApp.BlogEngine
                 defaults: new { controller="Post", action= "Index"});
         }
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-
-        }
     }
 }

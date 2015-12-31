@@ -10,14 +10,9 @@ using ModularApp.Common;
 
 namespace Account
 {
-    public class AccountExtension:IExtension
+    public class AccountExtension:Extension
     {
-        public void ConfigureRoutes(IRouteBuilder routes)
-        {
-            
-        }
-
-        public void ConfigureServices(IServiceCollection services)
+        public override void ConfigureServices(IServiceCollection services)
         {
             // Add application services.
             services.AddTransient<IEmailSender,AuthMessageSender>();
@@ -25,9 +20,5 @@ namespace Account
 
         }
 
-        public void Configure(IApplicationBuilder app)
-        {
-
-        }
     }
 }

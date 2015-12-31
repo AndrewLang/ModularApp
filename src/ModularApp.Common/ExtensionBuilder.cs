@@ -14,10 +14,7 @@ namespace ModularApp.Common
             ServiceProvider = services.BuildServiceProvider();
         }
 
-        public IServiceCollection Services
-        {
-            get;            
-        }
+        public IServiceCollection Services { get; }
         public IServiceProvider ServiceProvider { get; }
     }
 }

@@ -24,8 +24,9 @@ namespace ModularApp
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables();
+                                .AddJsonFile("appsettings.json")
+                                .AddEnvironmentVariables();
+
             Configuration = builder.Build();
         }
 
@@ -36,26 +37,25 @@ namespace ModularApp
         {
             // Add framework services.
             services.AddEntityFramework()
-                .AddSqlServer()
-                .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+                    .AddSqlServer()
+                    .AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
             services.AddIdentity<User,IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddDefaultTokenProviders();
 
 
             services.AddMvc()
-                   .AddControllersAsServices(new Assembly[] {
-                        GetType().GetTypeInfo().Assembly
-                   })
-                   .AddViewOptions(options => {
-                       var count = options.ViewEngines.Count;
-                   })
-                   .AddRazorOptions(options => {
-                       //var provider = options.FileProvider;
-                       //options.ViewLocationExpanders.Add(new ModuleViewLocationExpander(services,Configuration));
-                   });
+                    .AddControllersAsServices(new Assembly[] {
+                         GetType().GetTypeInfo().Assembly
+                    })
+                    .AddViewOptions(options => {
+                        var count = options.ViewEngines.Count;
+                    })
+                    .AddRazorOptions(options => {
+                        //var provider = options.FileProvider;
+                        //options.ViewLocationExpanders.Add(new ModuleViewLocationExpander(services,Configuration));
+                    });
 
 
             services.ScanExtensions()
@@ -86,6 +86,8 @@ namespace ModularApp
 
             app.UseMvc(routes =>
             {
+                app.ConfigureExtensionRoutes(routes);
+
                 // Support area
                 routes.MapRoute(name: "areaRoute",
                    template: "{area:exists}/{controller}/{action}",
